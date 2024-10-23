@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Marca {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(30)
+  modelos   Modelo[]
+  @@map("marcas")
+}
+
+model Foto {
+  id          Int       @id @default(autoincrement())
+  descricao   String    @db.VarChar(30)
+  codigoFoto  String    @db.LongText
+  modelo      Modelo    @relation(fields: [modeloId], references: [id])
+  modeloId    Int
+  @@map("fotos")
+}
+
+model Cliente {
+  id           Int      @id @default(autoincrement())
+  nome         String   @db.VarChar(60)
+  email        String   @db.VarChar(60) @unique
+  senha        String   @db.VarChar(60)   // senha deve ser varchar(60)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  orders       Order[]
+  @@map("clientes")
+}
+
+
+model Modelo {
+  id           Int      @id @default(autoincrement())
+  tipo         String   @db.VarChar(60)
+  preco        String   @db.VarChar(60) 
+  senha        String   @db.VarChar(60)   // senha deve ser varchar(60)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt  
+  marca        Marca    @relation(fields: [marcaId], references: [id])
+  marcaId      Int
+  fotos        Foto[]
+  orders       Order[]
+  @@map("modelos")
+}
+
+
+model Order {
+  id             Int      @id @default(autoincrement())
+  cliente        Cliente  @relation(fields: [clienteId], references: [id])
+  clienteId      Int
+  modelo         Modelo   @relation(fields: [modeloId], references: [id])
+  modeloId       Int
+  pagamentos     Pagamento
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@map("orders")
+}
+
+
+
+enum Pagamento {
+  CREDITO
+  PIX
+}
